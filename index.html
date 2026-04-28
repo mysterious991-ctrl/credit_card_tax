@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>2026 繳稅最強工具</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f7f6f3;--bg3:#efeee9;
+  --text:#1a1a1a;--text2:#5f5e5a;--text3:#96948e;
+  --bdr:rgba(0,0,0,0.10);--bdr2:rgba(0,0,0,0.18);
+  --blue:#185FA5;--blue-lt:#E6F1FB;--blue-bd:#85B7EB;--blue-dk:#0C447C;
+  --teal:#0F6E56;--teal-lt:#E1F5EE;--teal-bd:#5DCAA5;
+  --amber:#854F0B;--amber-lt:#FAEEDA;--amber-bd:#EF9F27;
+  --purple:#534AB7;--purple-lt:#EEEDFE;
+  --red:#c0392b;
+  --r:10px;--rl:14px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--bg2:#252522;--bg3:#2f2f2b;
+  --text:#f0ede8;--text2:#b4b2a9;--text3:#888780;
+  --bdr:rgba(255,255,255,0.08);--bdr2:rgba(255,255,255,0.16);
+  --blue:#85B7EB;--blue-lt:#042C53;--blue-bd:#0C447C;--blue-dk:#B5D4F4;
+  --teal:#5DCAA5;--teal-lt:#04342C;--teal-bd:#085041;
+  --amber:#EF9F27;--amber-lt:#412402;--amber-bd:#633806;
+  --purple:#AFA9EC;--purple-lt:#26215C;
+}}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;
+  background:var(--bg2);color:var(--text);min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.app{max-width:480px;margin:0 auto;padding:0 0 5rem}
+
+/* ── Header ── */
+.header{
+  background:linear-gradient(135deg,#185FA5 0%,#0a3d6b 100%);
+  padding:2rem 1.25rem 1.5rem;
+  position:relative;overflow:hidden;
+}
+.header::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:130px;height:130px;border-radius:50%;
+  background:rgba(255,255,255,0.06);
+}
+.header::after{
+  content:'';position:absolute;bottom:-20px;left:-10px;
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(255,255,255,0.04);
+}
+.header-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;color:rgba(255,255,255,0.7);
+  text-transform:uppercase;letter-spacing:.08em;
+  background:rgba(255,255,255,0.12);border-radius:20px;
+  padding:3px 10px;margin-bottom:10px;
+}
+h1{font-size:26px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:8px;letter-spacing:-.3px}
+.header-sub{font-size:14px;color:rgba(255,255,255,0.75);line-height:1.6;font-weight:400}
+
+/* ── Progress ── */
+.prog-wrap{padding:1.25rem 1.25rem 0}
+.prog{display:flex;align-items:center}
+.pnode{display:flex;align-items:center;gap:5px}
+.pdot{
+  width:30px;height:30px;border-radius:50%;
+  border:2px solid var(--bdr2);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--text3);
+  transition:all .3s;flex-shrink:0;
+}
+.pdot.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 3px rgba(24,95,165,.2)}
+.pdot.done{background:var(--teal);border-color:var(--teal);color:#fff}
+.plbl{font-size:10px;color:var(--text3);white-space:nowrap;margin-top:3px}
+.plbl.active{color:var(--blue);font-weight:600}
+.pline{flex:1;height:2px;background:var(--bdr);margin:0 4px;border-radius:2px;min-width:8px}
+.pline.done{background:var(--teal)}
+.step-outer{padding:0 1.25rem;margin-top:1rem}
+
+/* ── Card / section ── */
+.sec{background:var(--bg);border:0.5px solid var(--bdr);border-radius:var(--rl);padding:1.1rem;margin-bottom:.9rem}
+.sec-title{font-size:14px;font-weight:600;margin-bottom:.9rem;display:flex;align-items:center;gap:7px;color:var(--text)}
+.sec-title i{width:16px;height:16px;color:var(--blue);flex-shrink:0}
+
+/* ── Tax input ── */
+.inp-wrap{position:relative}
+.inp-pre{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;font-weight:500}
+input[type=number]{
+  width:100%;height:52px;border:1.5px solid var(--bdr2);border-radius:var(--r);
+  background:var(--bg);color:var(--text);font-size:20px;font-weight:600;
+  padding:0 12px 0 28px;outline:none;transition:border-color .15s;
+}
+input[type=number]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+.inp-hint{font-size:12px;color:var(--text3);margin-top:7px;display:flex;align-items:flex-start;gap:5px;line-height:1.5}
+.inp-hint i{width:13px;height:13px;flex-shrink:0;margin-top:1px}
+
+/* ── Card picker ── */
+.bank-block{margin-bottom:.75rem}
+.bank-label{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:.5rem;padding:0 2px;
+}
+.bank-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.card-list{display:flex;flex-direction:column;gap:8px}
+
+/* Full-row clickable card */
+.ccard{
+  display:flex;align-items:center;gap:12px;
+  padding:12px;border:1.5px solid var(--bdr);
+  border-radius:var(--r);cursor:pointer;
+  transition:border-color .15s,background .15s;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+  background:var(--bg);
+}
+.ccard:active{transform:scale(.99)}
+.ccard.on{border-color:var(--blue);background:var(--blue-lt)}
+.ccard-chk{
+  width:20px;height:20px;border-radius:6px;
+  border:1.5px solid var(--bdr2);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+}
+.ccard.on .ccard-chk{background:var(--blue);border-color:var(--blue)}
+.ccard-chk-ico{width:11px;height:11px;color:#fff;opacity:0;transition:opacity .15s}
+.ccard.on .ccard-chk-ico{opacity:1}
+.ccard-body{flex:1;min-width:0}
+.ccard-name{font-size:13px;font-weight:500;line-height:1.3;color:var(--text)}
+.ccard-meta{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4}
+.ccard-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.rate-pill{
+  display:inline-block;font-size:10px;padding:2px 7px;
+  border-radius:10px;font-weight:600;white-space:nowrap;
+}
+.rh{background:var(--teal-lt);color:var(--teal)}
+.rm{background:var(--blue-lt);color:var(--blue)}
+.rl{background:var(--bg3);color:var(--text3)}
+.rn{background:var(--amber-lt);color:var(--amber)}
+.tag-pill{font-size:10px;padding:1px 5px;border-radius:6px;background:var(--amber-lt);color:var(--amber);font-weight:500}
+
+/* ── Custom card form ── */
+.custom-form{border:1.5px dashed var(--bdr2);border-radius:var(--rl);padding:1rem;background:var(--bg)}
+.cf-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.cf-title i{width:15px;height:15px;color:var(--purple)}
+.cf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.cf-field label{font-size:11px;color:var(--text2);margin-bottom:4px;display:block;font-weight:500}
+.cf-field input{
+  width:100%;height:38px;border:1px solid var(--bdr2);border-radius:var(--r);
+  background:var(--bg);color:var(--text);font-size:14px;padding:0 10px;outline:none;
+}
+.cf-field input:focus{border-color:var(--purple);box-shadow:0 0 0 2px rgba(83,74,183,.12)}
+.cf-field.full{grid-column:1/-1}
+.cf-add-btn{
+  width:100%;height:40px;border:none;border-radius:var(--r);
+  background:var(--purple-lt);color:var(--purple);font-size:13px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s;
+}
+.cf-add-btn i{width:14px;height:14px}
+.cf-add-btn:hover{background:var(--purple);color:#fff}
+.cf-added{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.cf-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);background:var(--bg2);font-size:12px}
+.cf-item-body{flex:1}
+.cf-item-name{font-weight:500;color:var(--text)}
+.cf-item-meta{color:var(--text3);font-size:11px;margin-top:1px}
+.cf-del{width:24px;height:24px;border:none;background:none;cursor:pointer;color:var(--text3);padding:0;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.cf-del:hover{background:var(--bg3);color:var(--red)}
+.cf-del i{width:14px;height:14px}
+
+/* ── Goal / new card options ── */
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ocard{
+  border:1.5px solid var(--bdr);border-radius:var(--rl);
+  padding:1rem;cursor:pointer;transition:all .18s;background:var(--bg);
+  -webkit-tap-highlight-color:transparent;
+}
+.ocard:active{transform:scale(.98)}
+.ocard.on{border-color:var(--blue);background:var(--blue-lt)}
+.oico{font-size:22px;margin-bottom:7px}
+.otit{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--text)}
+.odesc{font-size:11px;color:var(--text2);line-height:1.5}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:48px;padding:0 20px;border:1.5px solid var(--bdr2);
+  border-radius:var(--r);background:var(--bg);color:var(--text);
+  font-size:14px;font-weight:500;cursor:pointer;
+  transition:background .12s,transform .1s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.97)}
+.btn i{width:16px;height:16px}
+.btnp{
+  background:var(--blue);border-color:var(--blue);color:#fff;
+  box-shadow:0 2px 8px rgba(24,95,165,.3);
+}
+.btnp:hover,.btnp:active{background:var(--blue-dk)}
+.btn-row{display:flex;gap:10px;margin-top:1.25rem}
+.btn-row .btn:first-child:not(:last-child){flex-shrink:0}
+.btn-row .btnp{flex:1}
+
+/* ── Results ── */
+.res-card{
+  background:var(--bg);border:1.5px solid var(--bdr);
+  border-radius:var(--rl);padding:1.1rem;margin-bottom:.9rem;
+}
+.res-card.best{border-color:var(--teal);background:var(--teal-lt)}
+.res-card.rec{border-color:var(--blue);background:var(--blue-lt)}
+.badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;
+  margin-right:4px;margin-bottom:6px;
+}
+.bteal{background:var(--teal);color:#fff}
+.bblue{background:var(--blue);color:#fff}
+.bamb{background:var(--amber-lt);color:var(--amber)}
+.bpur{background:var(--purple-lt);color:var(--purple)}
+.res-title{font-size:15px;font-weight:600;margin-bottom:2px;line-height:1.3}
+.res-bank{font-size:12px;color:var(--text2);margin-bottom:.75rem}
+.metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:.75rem}
+.met{background:var(--bg2);border-radius:var(--r);padding:9px 8px;text-align:center}
+.mlbl{font-size:10px;color:var(--text3);margin-bottom:3px;line-height:1.3}
+.mval{font-size:16px;font-weight:700}
+.mpos{color:var(--teal)}
+.res-desc{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:.75rem;padding:8px;background:var(--bg3);border-radius:var(--r)}
+.ctas{display:flex;gap:7px;flex-wrap:wrap}
+.cta{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:12px;font-weight:500;color:var(--blue);
+  border:1px solid var(--blue-bd);border-radius:var(--r);
+  padding:6px 11px;text-decoration:none;background:var(--bg);
+  transition:background .12s;
+}
+.cta:hover{background:var(--blue-lt)}
+.cta i{width:13px;height:13px}
+
+/* ── Compare table ── */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:400px}
+th{font-size:11px;font-weight:600;color:var(--text2);padding:8px;border-bottom:1.5px solid var(--bdr2);text-align:left;white-space:nowrap}
+td{padding:9px 8px;border-bottom:0.5px solid var(--bdr);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.tpos{color:var(--teal);font-weight:600}
+.tneu{color:var(--text3)}
+
+/* Chart */
+.ch-wrap{height:190px;margin-top:.75rem}
+
+/* Ad */
+.ad{background:var(--amber-lt);border:1px solid var(--amber-bd);border-radius:var(--rl);padding:1rem;display:flex;gap:10px;margin-top:.75rem}
+.ad-icon{width:36px;height:36px;background:var(--amber-bd);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ad-icon i{width:18px;height:18px;color:#fff}
+.ad-title{font-size:13px;font-weight:600;color:var(--amber);margin-bottom:3px}
+.ad-desc{font-size:12px;color:var(--amber);line-height:1.5}
+.ad-link{color:var(--amber);font-weight:700;text-decoration:underline}
+
+.hidden{display:none!important}
+.note{font-size:11px;color:var(--text3);line-height:1.5;margin-top:6px}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-tag">💡 2026 報稅季</div>
+  <h1>繳稅最強工具</h1>
+  <p class="header-sub">不用再上網查一堆資訊了！<br>按照你的需求，直接告訴你怎麼繳稅最划算！</p>
+</div>
+
+<!-- Progress -->
+<div class="prog-wrap">
+  <div class="prog">
+    <div class="pnode">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div class="pdot active" id="d1">1</div>
+        <span class="plbl active" id="l1">稅額&amp;選卡</span>
+      </div>
+    </div>
+    <div class="pline" id="ln1"></div>
+    <div class="pnode">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div class="pdot" id="d2">2</div>
+        <span class="plbl" id="l2">繳稅目標</span>
+      </div>
+    </div>
+    <div class="pline" id="ln2"></div>
+    <div class="pnode">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div class="pdot" id="d3">3</div>
+        <span class="plbl" id="l3">辦新卡？</span>
+      </div>
+    </div>
+    <div class="pline" id="ln3"></div>
+    <div class="pnode">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div class="pdot" id="d4">4</div>
+        <span class="plbl" id="l4">最佳方案</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Step 1 ══ -->
+<div id="s1" class="step-outer">
+
+  <!-- 稅額 -->
+  <div class="sec">
+    <div class="sec-title"><i data-lucide="receipt"></i>今年要繳多少稅？</div>
+    <div class="inp-wrap">
+      <span class="inp-pre">$</span>
+      <input type="number" id="taxAmt" inputmode="numeric" placeholder="0" min="0" step="1000">
+    </div>
+    <p class="inp-hint"><i data-lucide="info"></i>輸入綜所稅應繳金額（新台幣）。繳稅截止日：2026/6/1</p>
+  </div>
+
+  <!-- 信用卡選擇 -->
+  <div class="sec">
+    <div class="sec-title"><i data-lucide="credit-card"></i>你有哪些信用卡？</div>
+    <p class="note" style="margin-bottom:.9rem">選擇你手上持有的卡，可複選。沒有的話直接跳過。</p>
+    <div id="bankList"></div>
+  </div>
+
+  <!-- 自訂卡片 -->
+  <div class="sec">
+    <div class="sec-title"><i data-lucide="plus-square"></i>自訂卡片優惠</div>
+    <p class="note" style="margin-bottom:.9rem">如果你的卡有特殊回饋，或銀行專員告知你特別條件，在這裡輸入！</p>
+    <div class="custom-form">
+      <div class="cf-title"><i data-lucide="edit-3"></i>新增自訂卡片</div>
+      <div class="cf-grid">
+        <div class="cf-field full">
+          <label>卡片名稱</label>
+          <input type="text" id="cfName" placeholder="例如：我的玉山卡">
+        </div>
+        <div class="cf-field">
+          <label>現金回饋率 (%)</label>
+          <input type="number" id="cfRate" placeholder="0.3" min="0" max="100" step="0.01" inputmode="decimal">
+        </div>
+        <div class="cf-field">
+          <label>回饋上限 (元，選填)</label>
+          <input type="number" id="cfLimit" placeholder="5000" min="0" inputmode="numeric">
+        </div>
+        <div class="cf-field">
+          <label>分期 0 利率（期數）</label>
+          <input type="number" id="cfInst" placeholder="6" min="0" max="36" inputmode="numeric">
+        </div>
+        <div class="cf-field">
+          <label>有息分期利率 (% 年)</label>
+          <input type="number" id="cfInstRate" placeholder="3.88" min="0" max="20" step="0.01" inputmode="decimal">
+        </div>
+      </div>
+      <button class="cf-add-btn" onclick="addCustomCard()"><i data-lucide="plus"></i>加入計算</button>
+    </div>
+    <div class="cf-added" id="cfAdded"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btnp" onclick="goStep(2)">下一步 <i data-lucide="arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- ══ Step 2 ══ -->
+<div id="s2" class="step-outer hidden">
+  <div class="sec">
+    <div class="sec-title"><i data-lucide="target"></i>你想怎麼繳稅？</div>
+    <p class="note" style="margin-bottom:.9rem">根據你的目標，我們會推薦不同方案</p>
+    <div class="opt-grid">
+      <div class="ocard" id="gc" onclick="selGoal('cash')">
+        <div class="oico">💰</div>
+        <div class="otit">一次繳清<br>賺最多回饋</div>
+        <div class="odesc">直接拿現金回饋或點數，越高越好</div>
+      </div>
+      <div class="ocard" id="gi" onclick="selGoal('install')">
+        <div class="oico">📈</div>
+        <div class="otit">分期 0 利率<br>留現金投資</div>
+        <div class="odesc">把錢留著投資 0050，讓稅金幫你生錢</div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="goStep(1)"><i data-lucide="arrow-left"></i></button>
+    <button class="btn btnp" onclick="goStep(3)">下一步 <i data-lucide="arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- ══ Step 3 ══ -->
+<div id="s3" class="step-outer hidden">
+  <div class="sec">
+    <div class="sec-title"><i data-lucide="star"></i>願意辦一張新卡嗎？</div>
+    <p class="note" style="margin-bottom:.9rem">新戶首刷禮有時高達 10%，但需要申辦流程（約 1–2 週核卡），請衡量時間</p>
+    <div class="opt-grid">
+      <div class="ocard" id="ny" onclick="selNew('yes')">
+        <div class="oico">✅</div>
+        <div class="otit">願意！<br>衝新卡優惠</div>
+        <div class="odesc">可能額外多賺好幾倍</div>
+      </div>
+      <div class="ocard" id="nn" onclick="selNew('no')">
+        <div class="oico">🔒</div>
+        <div class="otit">不要，<br>用現有的卡</div>
+        <div class="odesc">不想多一張卡的手續</div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="goStep(2)"><i data-lucide="arrow-left"></i></button>
+    <button class="btn btnp" onclick="calculate()">幫我算！<i data-lucide="zap"></i></button>
+  </div>
+</div>
+
+<!-- ══ Step 4 ══ -->
+<div id="s4" class="step-outer hidden">
+  <div class="sec">
+    <div class="sec-title"><i data-lucide="award"></i>最佳方案出爐！</div>
+    <p id="rsum" class="note" style="margin-bottom:.9rem"></p>
+    <div id="rcards"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title"><i data-lucide="table-2"></i>完整比較表</div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>方案</th><th>信用卡回饋</th><th>ETF增益</th><th>總淨利</th><th>分期</th>
+      </tr></thead>
+      <tbody id="ctbody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title"><i data-lucide="bar-chart-2"></i>收益視覺化</div>
+    <div class="ch-wrap"><canvas id="bc"></canvas></div>
+  </div>
+
+  <div id="adarea"></div>
+
+  <div class="btn-row" style="margin-top:.75rem">
+    <button class="btn btnp" onclick="resetAll()"><i data-lucide="rotate-ccw"></i>重新計算</button>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   20 張熱門卡資料庫（2026 綜所稅最新優惠）
+───────────────────────────────────────── */
+const BANKS = [
+  {
+    id:'taishin', name:'台新銀行', color:'#E8312A',
+    cards:[
+      {id:'ts1', name:'Richart 萬事達／JCB（財管）',
+        rate:0.005, rt:'cash', inst:12, cond:120000, lim:100000,
+        tag:'財管',
+        desc:'財管會員：不限金額0.4%，滿20萬0.5%，最高回饋10萬；12期0利率可同享'},
+      {id:'ts2', name:'Richart 一般卡友',
+        rate:0.002, rt:'cash', inst:12, cond:200000, lim:100000,
+        desc:'單筆滿20萬：0.2%，上限10萬；或選12期0利率（二擇一）'},
+      {id:'ts3', name:'台新街口聯名卡',
+        rate:0.0215, rt:'cash', inst:0, lim:99999,
+        tag:'街口APP',
+        desc:'街口APP繳費：0.15%無上限＋滿千2%加碼，最高2.15%；限量3.5萬人'},
+    ]
+  },
+  {
+    id:'esun', name:'玉山銀行', color:'#FFB300',
+    cards:[
+      {id:'es1', name:'玉山星宇航空聯名卡',
+        rate:0.006, rt:'mile', inst:0, lim:100000,
+        desc:'200元積1哩（哩程回饋0.6%），上限10萬哩'},
+      {id:'es2', name:'玉山世界／熊本熊／Unicard',
+        rate:0.003, rt:'point', inst:6, cond:1000000, lim:100000,
+        desc:'不限金額0.2%，滿100萬0.3%；6期0利率（與回饋二選一，帳戶扣繳）'},
+      {id:'es3', name:'玉山一般信用卡',
+        rate:0.001, rt:'point', inst:6, lim:100000,
+        desc:'0.1%玉山e point（1點=1元），上限10萬；或選6期0利率'},
+    ]
+  },
+  {
+    id:'cathay', name:'國泰世華', color:'#005BAC',
+    cards:[
+      {id:'ca1', name:'CUBE 卡／世界卡',
+        rate:0.003, rt:'point', inst:6, lim:100000,
+        desc:'全卡友6期0利率；滿額0.3%小樹點（1點≒0.5元）'},
+      {id:'ca2', name:'國泰一般信用卡',
+        rate:0.001, rt:'point', inst:6,
+        desc:'全卡友6期0利率；基本0.1%小樹點'},
+    ]
+  },
+  {
+    id:'ctbc', name:'中國信託', color:'#C8111A',
+    cards:[
+      {id:'ct1', name:'中信和泰／uniopen 聯名卡',
+        rate:0.004, rt:'point', inst:6,
+        desc:'最高0.4%回饋（OPENPOINT）；3/6期0利率'},
+      {id:'ct2', name:'中信商旅鈦金／LINE Pay 卡',
+        rate:0.001, rt:'cash', inst:6,
+        desc:'0.1%現金回饋無上限；3/6期0利率'},
+      {id:'ct3', name:'中信 icash Pay（uniopen卡）',
+        rate:0.10, rt:'point', inst:0, lim:50,
+        tag:'超商繳費',
+        desc:'7-11 icash2.0自動加值繳稅：10%OPENPOINT，每月上限50點/500元'},
+    ]
+  },
+  {
+    id:'fubon', name:'台北富邦', color:'#E50012',
+    cards:[
+      {id:'fb1', name:'富邦 OP 卡（OpenPossible）',
+        rate:0.015, rt:'point', inst:0, lim:60000,
+        tag:'7-11繳費',
+        desc:'OPEN錢包至7-11繳費：最高1.5%回饋，上限6萬（需富邦帳戶扣繳）'},
+      {id:'fb2', name:'富邦 J 卡',
+        rate:0.002, rt:'cash', inst:0, cond:120000, lim:2000,
+        desc:'單筆滿12萬，0.2%刷卡金，上限2,000元（需登錄）'},
+    ]
+  },
+  {
+    id:'shanghaibank', name:'上海商銀', color:'#004B9A',
+    cards:[
+      {id:'sh1', name:'上海銀小小兵回饋卡',
+        rate:0.05, rt:'cash', inst:0, lim:500,
+        tag:'全家繳費',
+        desc:'全盈+Pay至全家繳費：5%回饋，上限500元（需上海帳戶）'},
+      {id:'sh2', name:'上海銀信用卡（分期）',
+        rate:0.0, rt:'cash', inst:12, cond:30000,
+        desc:'稅款滿3萬：6/12期0利率（需上海帳戶自動扣繳）'},
+    ]
+  },
+  {
+    id:'yongfeng', name:'永豐銀行', color:'#00539B',
+    cards:[
+      {id:'yf1', name:'永傳世界卡（財管）',
+        rate:0.0038, rt:'cash', inst:6, lim:150000,
+        tag:'財管',
+        desc:'登錄享0.38%刷卡金，上限15萬；6期0利率'},
+      {id:'yf2', name:'永豐幣倍卡／DAWHO卡',
+        rate:0.0015, rt:'cash', inst:0, lim:1000,
+        desc:'登錄享0.15%刷卡金，上限1,000元（限量3萬名）'},
+    ]
+  },
+  {
+    id:'lianfang', name:'聯邦銀行', color:'#0070C0',
+    cards:[
+      {id:'lf1', name:'聯邦吉鶴卡',
+        rate:0.002, rt:'cash', inst:0,
+        desc:'一次付清0.2%回饋無上限（需登錄）'},
+    ]
+  },
+  {
+    id:'taicoop', name:'合作金庫', color:'#006B3E',
+    cards:[
+      {id:'tc1', name:'合庫信用卡',
+        rate:0.002, rt:'cash', inst:6, lim:100000,
+        desc:'登錄後0.2%（滿500萬0.28%，滿1000萬0.36%）；3/6期0利率'},
+    ]
+  },
+];
+
+// New card recommendations
+const NEW_CARDS = [
+  {id:'nc1', name:'台新街口聯名卡（新戶首刷禮）', bank:'台新銀行',
+    rate:0.10, rt:'cash', inst:0, lim:900, isNew:true,
+    link:'https://mkp.taishinbank.com.tw/s/2026/tax/index.html',
+    desc:'新戶首3個月不限通路加碼10%回饋，繳稅期間回饋上限900點'},
+];
+
+const CMAP = {};
+BANKS.forEach(b => b.cards.forEach(c => { CMAP[c.id] = { ...c, bname: b.name, bcolor: b.color }; }));
+
+let ST = { tax: 0, cards: [], custom: [], goal: '', nc: '', chart: null };
+
+/* ── Build card list ── */
+function buildList() {
+  const el = document.getElementById('bankList');
+  el.innerHTML = BANKS.map(b => `
+    <div class="bank-block">
+      <div class="bank-label">
+        <div class="bank-dot" style="background:${b.color}"></div>
+        ${b.name}
+      </div>
+      <div class="card-list">
+        ${b.cards.map(c => {
+          const pc = c.rate >= 0.03 ? 'rh' : c.rate >= 0.01 ? 'rn' : c.rate >= 0.002 ? 'rm' : 'rl';
+          const rt = c.rate > 0 ? (c.rate * 100).toFixed(2).replace(/\.?0+$/, '') + '%' : '分期';
+          const instTxt = c.inst > 0 ? `<span class="rate-pill rl" style="margin-left:4px">${c.inst}期0利</span>` : '';
+          const tagTxt = c.tag ? `<span class="tag-pill">${c.tag}</span>` : '';
+          return `<div class="ccard" id="cc_${c.id}" onclick="togCard('${c.id}')">
+            <div class="ccard-chk">
+              <i data-lucide="check" class="ccard-chk-ico" id="ci_${c.id}"></i>
+            </div>
+            <div class="ccard-body">
+              <div class="ccard-name">${c.name}</div>
+              <div class="ccard-meta">${c.desc.substring(0, 52)}${c.desc.length > 52 ? '…' : ''}</div>
+            </div>
+            <div class="ccard-right">
+              <span class="rate-pill ${pc}">${rt}</span>
+              ${instTxt}${tagTxt}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+  lucide.createIcons();
+}
+
+function togCard(id) {
+  const el = document.getElementById('cc_' + id);
+  if (ST.cards.includes(id)) {
+    ST.cards = ST.cards.filter(x => x !== id);
+    el.classList.remove('on');
+  } else {
+    ST.cards.push(id);
+    el.classList.add('on');
+  }
+}
+
+/* ── Custom card ── */
+let customId = 0;
+function addCustomCard() {
+  const name = document.getElementById('cfName').value.trim();
+  const rate = parseFloat(document.getElementById('cfRate').value) || 0;
+  const lim = parseFloat(document.getElementById('cfLimit').value) || 0;
+  const inst = parseInt(document.getElementById('cfInst').value) || 0;
+  const instRate = parseFloat(document.getElementById('cfInstRate').value) || 0;
+
+  if (!name) { alert('請填寫卡片名稱'); return; }
+  if (rate === 0 && inst === 0) { alert('請填寫現金回饋率或分期期數'); return; }
+
+  const card = {
+    id: 'cf_' + (++customId), name, rate: rate / 100, rt: 'cash',
+    inst, instRate, lim: lim || 999999, cond: 0,
+    bname: '自訂卡片', desc: `自訂：${rate}%回饋${inst > 0 ? `，${inst}期0利率` : ''}${lim > 0 ? `，上限${lim}元` : ''}`
+  };
+  ST.custom.push(card);
+
+  // Clear fields
+  ['cfName', 'cfRate', 'cfLimit', 'cfInst', 'cfInstRate'].forEach(id => document.getElementById(id).value = '');
+  renderCustom();
+}
+
+function removeCustom(id) {
+  ST.custom = ST.custom.filter(c => c.id !== id);
+  renderCustom();
+}
+
+function renderCustom() {
+  const el = document.getElementById('cfAdded');
+  el.innerHTML = ST.custom.map(c => `
+    <div class="cf-item">
+      <div class="cf-item-body">
+        <div class="cf-item-name">${c.name}</div>
+        <div class="cf-item-meta">${c.desc}</div>
+      </div>
+      <button class="cf-del" onclick="removeCustom('${c.id}')">
+        <i data-lucide="x"></i>
+      </button>
+    </div>`).join('');
+  lucide.createIcons();
+}
+
+/* ── Goal / new card ── */
+function selGoal(g) {
+  ST.goal = g;
+  document.getElementById('gc').classList.toggle('on', g === 'cash');
+  document.getElementById('gi').classList.toggle('on', g === 'install');
+}
+function selNew(n) {
+  ST.nc = n;
+  document.getElementById('ny').classList.toggle('on', n === 'yes');
+  document.getElementById('nn').classList.toggle('on', n === 'no');
+}
+
+/* ── Step navigation ── */
+function goStep(n) {
+  if (n === 2) {
+    const v = parseFloat(document.getElementById('taxAmt').value);
+    if (!v || v <= 0) { alert('請輸入有效的稅額'); return; }
+    ST.tax = v;
+  }
+  if (n === 3 && !ST.goal) { alert('請選擇繳稅目標'); return; }
+  [1, 2, 3, 4].forEach(i => document.getElementById('s' + i).classList.add('hidden'));
+  document.getElementById('s' + n).classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updProg(n);
+  lucide.createIcons();
+}
+
+function updProg(cur) {
+  [1, 2, 3, 4].forEach(i => {
+    document.getElementById('d' + i).className = 'pdot ' + (i < cur ? 'done' : i === cur ? 'active' : '');
+    document.getElementById('l' + i).className = 'plbl ' + (i === cur ? 'active' : '');
+    if (i < 4) document.getElementById('ln' + i).className = 'pline ' + (i < cur ? 'done' : '');
+  });
+}
+
+/* ── ETF calculation (0050, 7% annual) ── */
+function calcEtfGain(tax, months) {
+  if (!months) return 0;
+  let g = 0;
+  const monthly = tax / months;
+  for (let m = 1; m <= months; m++) g += monthly * (0.07 / 12) * (months - m + 1);
+  return Math.round(g);
+}
+
+/* ── Main calculation ── */
+function calculate() {
+  if (!ST.nc) { alert('請選擇是否願意申請新卡'); return; }
+  const tax = ST.tax;
+  const goal = ST.goal;
+  const results = [];
+
+  // Selected known cards, or all if none selected
+  const useIds = ST.cards.length ? ST.cards : Object.keys(CMAP);
+  useIds.forEach(id => {
+    const c = CMAP[id]; if (!c) return;
+    if (c.cond && tax < c.cond) return;
+    if (goal === 'cash' && c.rate === 0 && c.inst > 0) return;
+    const rebate = Math.round(c.lim ? Math.min(tax * c.rate, c.lim) : tax * c.rate);
+    const ins = goal === 'install' ? c.inst : 0;
+    const eg = calcEtfGain(tax, ins);
+    results.push({ id, bank: c.bname, card: c.name, rebate, etfGain: eg, net: rebate + eg, inst: ins, desc: c.desc, rt: c.rt, isNew: false, link: '' });
+  });
+
+  // Custom cards
+  ST.custom.forEach(c => {
+    if (c.cond && tax < c.cond) return;
+    const rebate = Math.round(c.lim < 999999 ? Math.min(tax * c.rate, c.lim) : tax * c.rate);
+    const ins = goal === 'install' ? c.inst : 0;
+    const eg = calcEtfGain(tax, ins);
+    results.push({ id: c.id, bank: '自訂卡片', card: c.name, rebate, etfGain: eg, net: rebate + eg, inst: ins, desc: c.desc, rt: 'cash', isNew: false, link: '' });
+  });
+
+  // New card option
+  if (ST.nc === 'yes') {
+    NEW_CARDS.forEach(c => {
+      if (!ST.cards.includes(c.id)) {
+        const rebate = Math.round(Math.min(tax * c.rate, c.lim));
+        results.push({ id: c.id, bank: c.bank, card: c.name, rebate, etfGain: 0, net: rebate, inst: 0, desc: c.desc, rt: 'cash', isNew: true, link: c.link });
+      }
+    });
+  }
+
+  if (!results.length) {
+    alert('沒有符合條件的方案。請確認稅額或新增自訂卡片。');
+    return;
+  }
+
+  results.sort((a, b) => b.net - a.net);
+  const top = results.slice(0, 4);
+  top[0].tagBest = true;
+  const rec = top.find((r, i) => {
+    if (i === 0) return false;
+    return goal === 'install' ? r.inst > 0 : r.inst === 0 && r.rebate > 0;
+  });
+  if (rec) rec.tagRec = true;
+  else if (top[1]) top[1].tagRec = true;
+
+  goStep(4);
+  renderRes(top);
+}
+
+/* ── Render results ── */
+function renderRes(top) {
+  document.getElementById('rsum').textContent =
+    `稅額 NT$${ST.tax.toLocaleString()}，從 ${top.length} 個方案中比較，以下是最划算的選擇：`;
+
+  document.getElementById('rcards').innerHTML = top.map((p, i) => {
+    const cls = p.tagBest ? 'res-card best' : p.tagRec ? 'res-card rec' : 'res-card';
+    const bds = [
+      p.tagBest ? '<span class="badge bteal">★ 最划算</span>' : '',
+      p.tagRec ? '<span class="badge bblue">▲ 最推薦</span>' : '',
+      p.isNew ? '<span class="badge bamb">新卡</span>' : '',
+      p.inst > 0 ? `<span class="badge bpur">${p.inst}期0利率</span>` : ''
+    ].filter(Boolean).join('');
+    const etfTxt = p.etfGain > 0 ? '$' + p.etfGain.toLocaleString() : '—';
+    const al = p.isNew && p.link ? `<a class="cta" href="${p.link}" target="_blank"><i data-lucide="external-link"></i>申請新卡</a>` : '';
+    const il = (ST.goal === 'install' && p.inst > 0)
+      ? `<a class="cta" href="https://istockapp.cathaysec.com.tw/Marketing/FamilyAB/shareB?b=26424D30-CE8F-42C8-A6C2-0F0B889BFA9B" target="_blank"><i data-lucide="trending-up"></i>國泰證券開戶</a>` : '';
+    return `<div class="${cls}">
+      <div>${bds}</div>
+      <div class="res-title">${p.card}</div>
+      <div class="res-bank">${p.bank}</div>
+      <div class="metrics">
+        <div class="met">
+          <div class="mlbl">💳 回饋</div>
+          <div class="mval mpos">$${p.rebate.toLocaleString()}</div>
+        </div>
+        <div class="met">
+          <div class="mlbl">📈 ETF增益</div>
+          <div class="mval mpos">${etfTxt}</div>
+        </div>
+        <div class="met">
+          <div class="mlbl">🏆 總淨利</div>
+          <div class="mval mpos">$${p.net.toLocaleString()}</div>
+        </div>
+      </div>
+      <div class="res-desc">${p.desc}</div>
+      ${al || il ? `<div class="ctas">${al}${il}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Traditional method for comparison
+  const trad = { bank: '傳統繳清', card: 'ATM/銀行轉帳', rebate: 0, etfGain: 0, net: 0, inst: 0, desc: '無任何回饋' };
+  document.getElementById('ctbody').innerHTML = [...top, trad].map(p => `
+    <tr>
+      <td><strong>${p.card.substring(0, 14)}</strong><br><span style="font-size:10px;color:var(--text3)">${p.bank}</span></td>
+      <td class="${p.rebate > 0 ? 'tpos' : 'tneu'}">$${(p.rebate || 0).toLocaleString()}</td>
+      <td class="${p.etfGain > 0 ? 'tpos' : 'tneu'}">${p.etfGain > 0 ? '$' + p.etfGain.toLocaleString() : '—'}</td>
+      <td class="${p.net > 0 ? 'tpos' : 'tneu'}">$${(p.net || 0).toLocaleString()}</td>
+      <td>${p.inst > 0 ? p.inst + '期0利' : '一次付'}</td>
+    </tr>`).join('');
+
+  // Chart
+  if (ST.chart) ST.chart.destroy();
+  ST.chart = new Chart(document.getElementById('bc').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: top.map(p => p.card.substring(0, 8)),
+      datasets: [
+        { label: '信用卡回饋', data: top.map(p => p.rebate), backgroundColor: 'rgba(15,110,86,.75)', borderRadius: 5 },
+        { label: 'ETF增益', data: top.map(p => p.etfGain), backgroundColor: 'rgba(24,95,165,.55)', borderRadius: 5 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { font: { size: 11 }, color: 'rgb(110,110,110)', boxWidth: 12 } } },
+      scales: {
+        x: { stacked: true, ticks: { font: { size: 10 }, color: 'rgb(130,130,130)' }, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => '$' + v.toLocaleString(), font: { size: 10 }, color: 'rgb(130,130,130)' }, grid: { color: 'rgba(150,150,150,.1)' } }
+      }
+    }
+  });
+
+  // Ad
+  document.getElementById('adarea').innerHTML = ST.nc === 'yes'
+    ? `<div class="ad">
+        <div class="ad-icon"><i data-lucide="gift"></i></div>
+        <div>
+          <div class="ad-title">🎁 台新街口卡 新戶加碼</div>
+          <div class="ad-desc">首3個月不限通路加碼10%回饋，繳稅最高2.15%無上限。
+          <br><a class="ad-link" href="https://mkp.taishinbank.com.tw/s/2026/tax/index.html" target="_blank">查看申請詳情 →</a></div>
+        </div>
+      </div>` : '';
+
+  lucide.createIcons();
+}
+
+function resetAll() {
+  ST = { tax: 0, cards: [], custom: [], goal: '', nc: '', chart: ST.chart };
+  document.getElementById('taxAmt').value = '';
+  BANKS.forEach(b => b.cards.forEach(c => {
+    const el = document.getElementById('cc_' + c.id);
+    if (el) el.classList.remove('on');
+  }));
+  ['gc', 'gi', 'ny', 'nn'].forEach(id => document.getElementById(id).classList.remove('on'));
+  document.getElementById('cfAdded').innerHTML = '';
+  goStep(1);
+}
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded', () => {
+  buildList();
+});
+</script>
+</body>
+</html>
