@@ -260,6 +260,55 @@ tr:last-child td{border-bottom:none}
 .ad-desc{font-size:12px;color:var(--amber);line-height:1.5}
 .ad-link{color:var(--amber);font-weight:700;text-decoration:underline}
 
+/* ── Bank accordion (collapsed by default) ── */
+.bank-block{margin-bottom:.5rem;border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden}
+.bank-toggle{
+  display:flex;align-items:center;gap:8px;
+  padding:11px 12px;cursor:pointer;background:var(--bg);
+  user-select:none;-webkit-tap-highlight-color:transparent;
+  transition:background .15s;
+}
+.bank-toggle:active{background:var(--bg2)}
+.bank-toggle-l{display:flex;align-items:center;gap:8px;flex:1}
+.bank-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.bank-toggle-name{font-size:13px;font-weight:600;color:var(--text)}
+.bank-toggle-cnt{font-size:11px;color:var(--text3)}
+.bank-toggle-sel{font-size:11px;color:var(--blue);font-weight:500;background:var(--blue-lt);padding:2px 7px;border-radius:10px}
+.bank-toggle-chev{width:15px;height:15px;color:var(--text3);transition:transform .22s;flex-shrink:0}
+.bank-toggle-chev.open{transform:rotate(180deg)}
+.bank-cards-wrap{display:none;padding:0 10px 10px;flex-direction:column;gap:7px}
+.bank-cards-wrap.open{display:flex}
+
+/* ── 3-option goal grid ── */
+.opt-col{display:flex;flex-direction:column;gap:10px}
+.ocard3{
+  display:flex;align-items:flex-start;gap:12px;
+  border:1.5px solid var(--bdr);border-radius:var(--rl);
+  padding:1rem;cursor:pointer;transition:all .18s;background:var(--bg);
+  -webkit-tap-highlight-color:transparent;
+}
+.ocard3:active{transform:scale(.99)}
+.ocard3.on{border-color:var(--blue);background:var(--blue-lt)}
+.ocard3-ico{font-size:22px;flex-shrink:0;line-height:1}
+.ocard3-body{flex:1}
+.ocard3-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.ocard3-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.ocard3-chk{
+  width:20px;height:20px;border-radius:50%;border:1.5px solid var(--bdr2);
+  background:var(--bg);flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.ocard3.on .ocard3-chk{background:var(--blue);border-color:var(--blue)}
+.ocard3-dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:0;transition:opacity .15s}
+.ocard3.on .ocard3-dot{opacity:1}
+
+/* ── Legend explanation ── */
+.legend-box{background:var(--bg3);border-radius:var(--r);padding:.8rem;margin-bottom:1rem;display:flex;flex-direction:column;gap:8px}
+.legend-row{display:flex;align-items:flex-start;gap:9px}
+.legend-badge{flex-shrink:0;margin-top:1px}
+.legend-txt{font-size:12px;color:var(--text2);line-height:1.5}
+.legend-txt strong{color:var(--text);display:block;font-size:13px;margin-bottom:1px}
+
 .hidden{display:none!important}
 .note{font-size:11px;color:var(--text3);line-height:1.5;margin-top:6px}
 </style>
@@ -367,18 +416,32 @@ tr:last-child td{border-bottom:none}
 <!-- ══ Step 2 ══ -->
 <div id="s2" class="step-outer hidden">
   <div class="sec">
-    <div class="sec-title"><i data-lucide="target"></i>你想怎麼繳稅？</div>
-    <p class="note" style="margin-bottom:.9rem">根據你的目標，我們會推薦不同方案</p>
-    <div class="opt-grid">
-      <div class="ocard" id="gc" onclick="selGoal('cash')">
-        <div class="oico">💰</div>
-        <div class="otit">一次繳清<br>賺最多回饋</div>
-        <div class="odesc">直接拿現金回饋或點數，越高越好</div>
+    <div class="sec-title"><i data-lucide="target"></i>你的繳稅目標是？</div>
+    <p class="note" style="margin-bottom:1rem">選擇最符合你現況的方向，我們會據此排出最適合你的方案</p>
+    <div class="opt-col">
+      <div class="ocard3" id="gc" onclick="selGoal('cash')">
+        <div class="ocard3-ico">💰</div>
+        <div class="ocard3-body">
+          <div class="ocard3-title">直接回饋，現賺現拿</div>
+          <div class="ocard3-desc">一次繳清，把稅款換成現金、點數或哩程。回饋率越高越好，不考慮分期。</div>
+        </div>
+        <div class="ocard3-chk"><div class="ocard3-dot"></div></div>
       </div>
-      <div class="ocard" id="gi" onclick="selGoal('install')">
-        <div class="oico">📈</div>
-        <div class="otit">分期 0 利率<br>留現金投資</div>
-        <div class="odesc">把錢留著投資 0050，讓稅金幫你生錢</div>
+      <div class="ocard3" id="gi" onclick="selGoal('install')">
+        <div class="ocard3-ico">📈</div>
+        <div class="ocard3-body">
+          <div class="ocard3-title">分期繳稅，錢拿去投資</div>
+          <div class="ocard3-desc">利用 0 利率分期把稅款拆開，省下來的資金投入 0050 等 ETF，讓稅金幫你賺錢。</div>
+        </div>
+        <div class="ocard3-chk"><div class="ocard3-dot"></div></div>
+      </div>
+      <div class="ocard3" id="gb" onclick="selGoal('best')">
+        <div class="ocard3-ico">🔍</div>
+        <div class="ocard3-body">
+          <div class="ocard3-title">哪個最划算就怎麼來</div>
+          <div class="ocard3-desc">不設限，綜合比較現金回饋與分期投資兩種路線，直接告訴你哪個淨收益最高。</div>
+        </div>
+        <div class="ocard3-chk"><div class="ocard3-dot"></div></div>
       </div>
     </div>
   </div>
@@ -416,7 +479,23 @@ tr:last-child td{border-bottom:none}
 <div id="s4" class="step-outer hidden">
   <div class="sec">
     <div class="sec-title"><i data-lucide="award"></i>最佳方案出爐！</div>
-    <p id="rsum" class="note" style="margin-bottom:.9rem"></p>
+    <p id="rsum" class="note" style="margin-bottom:.75rem"></p>
+    <div class="legend-box">
+      <div class="legend-row">
+        <span class="legend-badge"><span class="badge bteal">★ 最划算</span></span>
+        <div class="legend-txt">
+          <strong>綜合淨利最高</strong>
+          回饋金額＋分期後投入 ETF 的預估增益，加總起來數字最大的方案。純數字掛帥，不管難不難辦。
+        </div>
+      </div>
+      <div class="legend-row" style="margin-top:6px">
+        <span class="legend-badge"><span class="badge bblue">▲ 最推薦</span></span>
+        <div class="legend-txt">
+          <strong>最符合你目標的選擇</strong>
+          根據你選的方向（回饋 / 分期 / 綜合），在前幾名裡挑出最好執行、最適合你的那個。不一定回饋最高，但對你最實用。
+        </div>
+      </div>
+    </div>
     <div id="rcards"></div>
   </div>
 
@@ -570,38 +649,50 @@ BANKS.forEach(b => b.cards.forEach(c => { CMAP[c.id] = { ...c, bname: b.name, bc
 
 let ST = { tax: 0, cards: [], custom: [], goal: '', nc: '', chart: null };
 
-/* ── Build card list ── */
+/* ── Build card list with accordion (collapsed by default) ── */
 function buildList() {
   const el = document.getElementById('bankList');
-  el.innerHTML = BANKS.map(b => `
-    <div class="bank-block">
-      <div class="bank-label">
-        <div class="bank-dot" style="background:${b.color}"></div>
-        ${b.name}
+  el.innerHTML = BANKS.map(b => {
+    const cardsHtml = b.cards.map(c => {
+      const pc = c.rate >= 0.03 ? 'rh' : c.rate >= 0.01 ? 'rn' : c.rate >= 0.002 ? 'rm' : 'rl';
+      const rt = c.rate > 0 ? (c.rate * 100).toFixed(2).replace(/\.?0+$/, '') + '%' : '分期';
+      const instTxt = c.inst > 0 ? `<span class="rate-pill rl" style="margin-left:4px">${c.inst}期0利</span>` : '';
+      const tagTxt = c.tag ? `<span class="tag-pill">${c.tag}</span>` : '';
+      return `<div class="ccard" id="cc_${c.id}" onclick="togCard('${c.id}')">
+        <div class="ccard-chk">
+          <i data-lucide="check" class="ccard-chk-ico" id="ci_${c.id}"></i>
+        </div>
+        <div class="ccard-body">
+          <div class="ccard-name">${c.name}</div>
+          <div class="ccard-meta">${c.desc.substring(0, 52)}${c.desc.length > 52 ? '…' : ''}</div>
+        </div>
+        <div class="ccard-right">
+          <span class="rate-pill ${pc}">${rt}</span>
+          ${instTxt}${tagTxt}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="bank-block">
+      <div class="bank-toggle" onclick="togBank('bw_${b.id}','bc_${b.id}')">
+        <div class="bank-toggle-l">
+          <div class="bank-dot" style="background:${b.color}"></div>
+          <span class="bank-toggle-name">${b.name}</span>
+          <span class="bank-toggle-cnt">${b.cards.length} 張</span>
+        </div>
+        <i data-lucide="chevron-down" class="bank-toggle-chev" id="bw_${b.id}"></i>
       </div>
-      <div class="card-list">
-        ${b.cards.map(c => {
-          const pc = c.rate >= 0.03 ? 'rh' : c.rate >= 0.01 ? 'rn' : c.rate >= 0.002 ? 'rm' : 'rl';
-          const rt = c.rate > 0 ? (c.rate * 100).toFixed(2).replace(/\.?0+$/, '') + '%' : '分期';
-          const instTxt = c.inst > 0 ? `<span class="rate-pill rl" style="margin-left:4px">${c.inst}期0利</span>` : '';
-          const tagTxt = c.tag ? `<span class="tag-pill">${c.tag}</span>` : '';
-          return `<div class="ccard" id="cc_${c.id}" onclick="togCard('${c.id}')">
-            <div class="ccard-chk">
-              <i data-lucide="check" class="ccard-chk-ico" id="ci_${c.id}"></i>
-            </div>
-            <div class="ccard-body">
-              <div class="ccard-name">${c.name}</div>
-              <div class="ccard-meta">${c.desc.substring(0, 52)}${c.desc.length > 52 ? '…' : ''}</div>
-            </div>
-            <div class="ccard-right">
-              <span class="rate-pill ${pc}">${rt}</span>
-              ${instTxt}${tagTxt}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`).join('');
+      <div class="bank-cards-wrap" id="bc_${b.id}">${cardsHtml}</div>
+    </div>`;
+  }).join('');
   lucide.createIcons();
+}
+
+function togBank(chevId, cardsId) {
+  const chev = document.getElementById(chevId);
+  const cards = document.getElementById(cardsId);
+  const isOpen = cards.classList.contains('open');
+  cards.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
 }
 
 function togCard(id) {
@@ -662,8 +753,9 @@ function renderCustom() {
 /* ── Goal / new card ── */
 function selGoal(g) {
   ST.goal = g;
-  document.getElementById('gc').classList.toggle('on', g === 'cash');
-  document.getElementById('gi').classList.toggle('on', g === 'install');
+  ['gc','gi','gb'].forEach(id => document.getElementById(id).classList.remove('on'));
+  const map = { cash:'gc', install:'gi', best:'gb' };
+  if (map[g]) document.getElementById(map[g]).classList.add('on');
 }
 function selNew(n) {
   ST.nc = n;
@@ -710,34 +802,63 @@ function calculate() {
   const goal = ST.goal;
   const results = [];
 
-  // Selected known cards, or all if none selected
+  // Determine which "install modes" to evaluate
+  // cash: never use install; install: always use; best: try both and pick better
+  function evalCard(c, forceInst) {
+    if (c.cond && tax < c.cond) return null;
+    const rebate = Math.round(c.lim ? Math.min(tax * c.rate, c.lim) : tax * c.rate);
+    const ins = forceInst ? (c.inst || 0) : 0;
+    const eg = calcEtfGain(tax, ins);
+    return { rebate, ins, eg, net: rebate + eg };
+  }
+
   const useIds = ST.cards.length ? ST.cards : Object.keys(CMAP);
   useIds.forEach(id => {
     const c = CMAP[id]; if (!c) return;
-    if (c.cond && tax < c.cond) return;
-    if (goal === 'cash' && c.rate === 0 && c.inst > 0) return;
-    const rebate = Math.round(c.lim ? Math.min(tax * c.rate, c.lim) : tax * c.rate);
-    const ins = goal === 'install' ? c.inst : 0;
-    const eg = calcEtfGain(tax, ins);
-    results.push({ id, bank: c.bname, card: c.name, rebate, etfGain: eg, net: rebate + eg, inst: ins, desc: c.desc, rt: c.rt, isNew: false, link: '' });
+    if (goal === 'cash') {
+      if (c.rate === 0) return; // pure install card, skip
+      const r = evalCard(c, false); if (!r) return;
+      results.push({ id, bank: c.bname, card: c.name, ...r, desc: c.desc, rt: c.rt, isNew: false, link: '' });
+    } else if (goal === 'install') {
+      if (c.rate === 0 && c.inst === 0) return;
+      const r = evalCard(c, true); if (!r) return;
+      results.push({ id, bank: c.bname, card: c.name, ...r, desc: c.desc, rt: c.rt, isNew: false, link: '' });
+    } else {
+      // best: try cash mode
+      if (c.rate > 0) {
+        const r = evalCard(c, false);
+        if (r) results.push({ id: id+'_cash', bank: c.bname, card: c.name, ...r, desc: c.desc, rt: c.rt, isNew: false, link: '', mode:'cash' });
+      }
+      // best: try install mode
+      if (c.inst > 0) {
+        const r = evalCard(c, true);
+        if (r) results.push({ id: id+'_inst', bank: c.bname, card: c.name + (c.rate>0?' (分期)':''), ...r, desc: c.desc, rt: c.rt, isNew: false, link: '', mode:'install' });
+      }
+    }
   });
 
   // Custom cards
   ST.custom.forEach(c => {
-    if (c.cond && tax < c.cond) return;
-    const rebate = Math.round(c.lim < 999999 ? Math.min(tax * c.rate, c.lim) : tax * c.rate);
-    const ins = goal === 'install' ? c.inst : 0;
-    const eg = calcEtfGain(tax, ins);
-    results.push({ id: c.id, bank: '自訂卡片', card: c.name, rebate, etfGain: eg, net: rebate + eg, inst: ins, desc: c.desc, rt: 'cash', isNew: false, link: '' });
+    const evalC = (ins) => {
+      const rebate = Math.round(c.lim < 999999 ? Math.min(tax * c.rate, c.lim) : tax * c.rate);
+      const eg = calcEtfGain(tax, ins);
+      return { rebate, ins, eg, net: rebate + eg };
+    };
+    if (goal === 'cash' || goal === 'best') {
+      const r = evalC(0);
+      results.push({ id: c.id+'_cash', bank: '自訂卡片', card: c.name, ...r, desc: c.desc, rt: 'cash', isNew: false, link: '' });
+    }
+    if ((goal === 'install' || goal === 'best') && c.inst > 0) {
+      const r = evalC(c.inst);
+      results.push({ id: c.id+'_inst', bank: '自訂卡片', card: c.name + ' (分期)', ...r, desc: c.desc, rt: 'cash', isNew: false, link: '' });
+    }
   });
 
   // New card option
   if (ST.nc === 'yes') {
     NEW_CARDS.forEach(c => {
-      if (!ST.cards.includes(c.id)) {
-        const rebate = Math.round(Math.min(tax * c.rate, c.lim));
-        results.push({ id: c.id, bank: c.bank, card: c.name, rebate, etfGain: 0, net: rebate, inst: 0, desc: c.desc, rt: 'cash', isNew: true, link: c.link });
-      }
+      const rebate = Math.round(Math.min(tax * c.rate, c.lim));
+      results.push({ id: c.id, bank: c.bank, card: c.name, rebate, etfGain: 0, eg: 0, net: rebate, ins: 0, desc: c.desc, rt: 'cash', isNew: true, link: c.link });
     });
   }
 
@@ -746,12 +867,19 @@ function calculate() {
     return;
   }
 
+  // Normalise field name
+  results.forEach(r => { if (r.eg !== undefined && r.etfGain === undefined) r.etfGain = r.eg; if (r.ins !== undefined && r.inst === undefined) r.inst = r.ins; });
+
   results.sort((a, b) => b.net - a.net);
   const top = results.slice(0, 4);
   top[0].tagBest = true;
+
+  // Best rec logic per goal
   const rec = top.find((r, i) => {
     if (i === 0) return false;
-    return goal === 'install' ? r.inst > 0 : r.inst === 0 && r.rebate > 0;
+    if (goal === 'install') return r.inst > 0;
+    if (goal === 'cash') return r.inst === 0 && r.rebate > 0;
+    return true; // best mode: second place is recommended
   });
   if (rec) rec.tagRec = true;
   else if (top[1]) top[1].tagRec = true;
@@ -852,8 +980,13 @@ function resetAll() {
   BANKS.forEach(b => b.cards.forEach(c => {
     const el = document.getElementById('cc_' + c.id);
     if (el) el.classList.remove('on');
+    // Close all accordions
+    const wrap = document.getElementById('bc_' + b.id);
+    const chev = document.getElementById('bw_' + b.id);
+    if (wrap) wrap.classList.remove('open');
+    if (chev) chev.classList.remove('open');
   }));
-  ['gc', 'gi', 'ny', 'nn'].forEach(id => document.getElementById(id).classList.remove('on'));
+  ['gc', 'gi', 'gb', 'ny', 'nn'].forEach(id => document.getElementById(id).classList.remove('on'));
   document.getElementById('cfAdded').innerHTML = '';
   goStep(1);
 }
